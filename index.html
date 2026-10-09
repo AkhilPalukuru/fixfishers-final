@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FixFishers — Community Repair</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+<script src="script.js" defer></script>
+</head>
+<body>
+<header class="header">
+  <a class="brand" href="#" aria-label="FixFishers home"><img class="brand-logo" src="logo-light.png" alt="FixFishers logo"></a>
+  <div class="header-actions">
+    <button type="button" id="accountButton" class="ghost-button">Sign in</button>
+    <button type="button" id="reportButton" class="report-button">+ Report an issue</button>
+  </div>
+</header>
+<main>
+  <section class="intro">
+    <div>
+      <img class="hero-logo" src="logo-dark.png" alt="">
+      <p class="eyebrow">COMMUNITY REPAIR · FISHERS, INDIANA</p>
+      <h1>See something broken? <span>Put it on the map.</span></h1>
+      <p class="description">Report potholes, streetlights, drainage and more. Neighbors can follow progress and discuss every report.</p>
+    </div>
+    <div class="stats">
+      <div><b id="statTotal">0</b><span>Total reports</span></div>
+      <div><b id="statOpen">0</b><span>Open issues</span></div>
+      <div><b id="statDone">0</b><span>Resolved</span></div>
+    </div>
+  </section>
+
+  <section class="map-section">
+    <div class="map-header">
+      <div><h2>Community map</h2><p>Explore reported issues around Fishers. Zoom out to see the full area.</p></div>
+      <div class="mode-toggle">
+        <button type="button" id="modeStreet" class="active">Regular</button>
+        <button type="button" id="modeEarth">Earth</button>
+      </div>
+    </div>
+    <div class="map-with-sidebar">
+      <div id="map"></div>
+      <aside class="issue-sidebar">
+        <div class="issue-sidebar-header">
+          <div><p class="eyebrow">COMMUNITY REPORTS</p><h3>Issues nearby</h3></div>
+          <span id="issueCount">0</span>
+        </div>
+        <div class="issue-filters">
+          <input type="search" id="searchInput" placeholder="Search reports or locations...">
+          <select id="typeFilter">
+            <option value="all">All repair types</option>
+            <option>Pothole / road damage</option><option>Broken streetlight</option><option>Flooding / drainage</option><option>Fallen tree</option><option>Damaged sidewalk</option><option>Broken sign</option><option>Park issue</option><option>Other</option>
+          </select>
+          <select id="severityFilter">
+            <option value="all">All severity</option><option>Low</option><option>Medium</option><option>High</option><option>Critical</option>
+          </select>
+        </div>
+        <div id="issueList" class="issue-list"></div>
+      </aside>
+    </div>
+    <div class="legend">
+      <div><span class="legend-dot new"></span> New</div>
+      <div><span class="legend-dot review"></span> Under review</div>
+      <div><span class="legend-dot resolved"></span> Resolved</div>
+    </div>
+  </section>
+
+  <section class="how">
+    <p class="eyebrow">HOW IT WORKS</p>
+    <h2>From report to repair in three steps</h2>
+    <div class="steps">
+      <div class="step"><b>1</b><h3>Report it</h3><p>Sign in, snap a photo, and pin the exact spot inside Fishers.</p></div>
+      <div class="step"><b>2</b><h3>Neighbors weigh in</h3><p>Anyone with an account can comment, confirm, and add details.</p></div>
+      <div class="step"><b>3</b><h3>Track progress</h3><p>Watch each report move from New to Under review to Resolved.</p></div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <a class="brand" href="#" aria-label="FixFishers home"><img class="brand-logo" src="logo-light.png" alt="FixFishers logo"></a>
+  <p>A community project for Fishers, Indiana. Reports are for neighbor awareness; for emergencies call 911.</p>
+</footer>
+
+<div id="reportOverlay" class="overlay">
+  <div class="panel">
+    <button type="button" id="closeReport" class="close-btn" aria-label="Close">×</button>
+    <p class="eyebrow">NEW COMMUNITY REPORT</p>
+    <h2>What needs fixing?</h2>
+    <form id="reportForm">
+      <label for="issueTitle">Report title</label>
+      <input type="text" id="issueTitle" placeholder="e.g. Pothole on 116th St" maxlength="80">
+      <label for="issueType">Issue type</label>
+      <select id="issueType"><option>Pothole / road damage</option><option>Broken streetlight</option><option>Flooding / drainage</option><option>Fallen tree</option><option>Damaged sidewalk</option><option>Broken sign</option><option>Park issue</option><option>Other</option></select>
+      <label for="issueSeverity">Severity</label>
+      <select id="issueSeverity"><option>Low</option><option selected>Medium</option><option>High</option><option>Critical</option></select>
+      <label for="issueImage">Photo</label>
+      <input type="file" id="issueImage" accept="image/*">
+      <div id="imagePreview" class="image-preview"></div>
+      <label for="issueDescription">Description</label>
+      <textarea id="issueDescription" placeholder="Describe what you noticed..." rows="3"></textarea>
+      <label for="placeSearch">Location (Fishers, IN only)</label>
+      <input type="text" id="placeSearch" placeholder="Search an address or place in Fishers..." autocomplete="off">
+      <div id="placeResults" class="place-results"></div>
+      <button type="button" id="chooseLocation" class="location-button">📍 Or pick on the map</button>
+      <p id="locationStatus" class="location-status">Location not selected</p>
+      <button type="submit" class="submit-report">Submit report →</button>
+    </form>
+  </div>
+</div>
+
+<div id="detailOverlay" class="overlay"><div class="panel" id="detailPanel"></div></div>
+
+<div id="authOverlay" class="overlay">
+  <div class="panel auth-panel">
+    <button type="button" id="closeAuth" class="close-btn" aria-label="Close">×</button>
+    <p class="eyebrow">FIXFISHERS ACCOUNT</p>
+    <h2 id="authTitle">Sign in</h2>
+    <form id="authForm">
+      <label for="authName">Username</label>
+      <input type="text" id="authName" maxlength="24" autocomplete="username">
+      <label for="authPass">Password</label>
+      <input type="password" id="authPass" autocomplete="current-password">
+      <p id="authError" class="location-status error"></p>
+      <button type="submit" id="authSubmit" class="submit-report">Sign in</button>
+    </form>
+    <p class="auth-switch"><span id="authSwitchText">New here?</span> <button type="button" id="authSwitch" class="link-btn">Create an account</button></p>
+  </div>
+</div>
+</body>
+</html>
